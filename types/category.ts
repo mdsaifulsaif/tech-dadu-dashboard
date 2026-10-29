@@ -20,3 +20,4 @@ export interface ICategoryInput {
   type: "product" | "blog" | "template" | "all";
   order?: number;
 }
+
