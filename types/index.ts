@@ -68,6 +68,7 @@ export interface IDigitalProduct {
   title: string;
   slug: string;
   category: ICategory | string;
+  shortSummary?: string;
   description: string;
   features: string[];
   techStack: string[];
@@ -86,6 +87,7 @@ export interface IDigitalProductInput {
   title: string;
   slug?: string;
   category: string;
+  shortSummary?: string;
   description: string;
   features: string[];
   techStack: string[];

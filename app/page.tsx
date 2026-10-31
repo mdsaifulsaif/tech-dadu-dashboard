@@ -50,7 +50,7 @@ export default async function AdminDashboardPage() {
   const counts = stats.counts;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8 w-full">
       {/* Welcome Header */}
       <div className="card-surface p-6 sm:p-8 rounded-2xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="relative z-10">

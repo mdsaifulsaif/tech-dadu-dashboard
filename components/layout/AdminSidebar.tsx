@@ -16,6 +16,7 @@ import {
   Sparkles,
   Shield,
   ExternalLink,
+  Palette,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { label: "Products / Gear", href: "/products", icon: Laptop },
   { label: "Categories", href: "/categories", icon: FolderTree },
   { label: "Templates & Kits", href: "/templates", icon: Layers },
+  { label: "UI/UX Designs", href: "/templates?category=ui-ux-design", icon: Palette },
   { label: "Guides & Blogs", href: "/blogs", icon: BookOpen },
   { label: "Newsletter Leads", href: "/subscribers", icon: Mail },
   { label: "Outbound Analytics", href: "/analytics", icon: BarChart3 },

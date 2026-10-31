@@ -163,13 +163,18 @@ export const templateApi = {
     });
     const queryString = searchParams.toString();
     return apiRequest<{
-      products: IDigitalProduct[];
-      pagination: {
-        total: number;
-        page: number;
-        pages: number;
-        limit: number;
-        hasMore: boolean;
+      templates?: IDigitalProduct[];
+      products?: IDigitalProduct[];
+      pagination?: {
+        totalItems?: number;
+        totalPages?: number;
+        currentPage?: number;
+        limit?: number;
+        hasNextPage?: boolean;
+        hasPrevPage?: boolean;
+        total?: number;
+        page?: number;
+        pages?: number;
       };
     }>(`/templates${queryString ? `?${queryString}` : ""}`);
   },

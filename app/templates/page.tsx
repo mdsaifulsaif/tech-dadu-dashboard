@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -19,13 +20,18 @@ import {
   Eye,
   RefreshCw,
   Code2,
+  Palette,
 } from "lucide-react";
 import { templateApi, categoryApi, uploadApi } from "@/lib/api";
 import { IDigitalProduct, IDigitalProductInput } from "@/types";
 import { ICategory } from "@/types/category";
+import { ImageGalleryManager } from "@/components/common/ImageGalleryManager";
+import { RichTextEditor } from "@/components/common/RichTextEditor";
 
 export default function TemplatesAdminPage() {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
   const { data: session } = useSession();
   const token = (session?.user as any)?.accessToken as string | undefined;
 
@@ -50,6 +56,7 @@ export default function TemplatesAdminPage() {
     title: "",
     slug: "",
     category: "",
+    shortSummary: "",
     description: "",
     features: ["Fully Responsive", "Dark Mode Support", "Clean Architecture"],
     techStack: ["Next.js 15", "Tailwind CSS", "TypeScript"],
@@ -74,6 +81,18 @@ export default function TemplatesAdminPage() {
     },
   });
 
+  // Sync category param from URL
+  useEffect(() => {
+    if (categoryParam && categories.length > 0) {
+      const matched = categories.find(
+        (c: ICategory) => c.slug === categoryParam || c._id === categoryParam
+      );
+      if (matched) {
+        setSelectedCategory(matched._id);
+      }
+    }
+  }, [categoryParam, categories]);
+
   // 2. Fetch Templates
   const {
     data: templatesData,
@@ -85,6 +104,7 @@ export default function TemplatesAdminPage() {
     queryKey: ["admin-templates", selectedCategory, pricingFilter, searchQuery, page],
     queryFn: async () => {
       const res = await templateApi.getAll({
+        status: "all",
         category: selectedCategory !== "all" ? selectedCategory : undefined,
         isFree: pricingFilter === "free" ? true : pricingFilter === "paid" ? false : undefined,
         search: searchQuery || undefined,
@@ -95,7 +115,10 @@ export default function TemplatesAdminPage() {
     },
   });
 
-  const templates = templatesData?.products || [];
+  const templates: IDigitalProduct[] =
+    templatesData?.templates ||
+    templatesData?.products ||
+    (Array.isArray(templatesData) ? templatesData : []);
   const pagination = templatesData?.pagination;
 
   // 3. Create Mutation
@@ -141,19 +164,45 @@ export default function TemplatesAdminPage() {
   });
 
   // Open Add Modal
-  const handleOpenAdd = () => {
+  const handleOpenAdd = (presetType: "template" | "uiux" = "template") => {
     setEditingTemplate(null);
+    const uiUxCat = categories.find(
+      (c: ICategory) => c.slug === "ui-ux-design" || c.name.toLowerCase().includes("ui")
+    );
+    const defaultCat =
+      presetType === "uiux" && uiUxCat
+        ? uiUxCat._id
+        : selectedCategory !== "all"
+        ? selectedCategory
+        : categories[0]?._id || "";
+    const isUiUx = presetType === "uiux" || (uiUxCat && defaultCat === uiUxCat._id);
+
     setFormData({
       title: "",
       slug: "",
-      category: categories[0]?._id || "",
+      category: defaultCat,
+      shortSummary: "",
       description: "",
-      features: ["Next.js 15 App Router", "Tailwind CSS v4 & Dark Mode", "TypeScript & ESLint", "Stripe Checkout Ready"],
-      techStack: ["Next.js", "Tailwind CSS", "TypeScript", "React 19"],
-      price: 29,
+      features: isUiUx
+        ? [
+            "50+ Clean Mobile & Web Screens",
+            "Component System & Auto-Layout v5",
+            "Dark & Light Theme Tokens",
+            "Free Google Fonts & Icons",
+          ]
+        : [
+            "Next.js 15 App Router",
+            "Tailwind CSS v4 & Dark Mode",
+            "TypeScript & ESLint",
+            "Stripe Checkout Ready",
+          ],
+      techStack: isUiUx
+        ? ["Figma", "Auto-Layout", "Design System", "Mobile App UI"]
+        : ["Next.js", "Tailwind CSS", "TypeScript", "React 19"],
+      price: isUiUx ? 19 : 29,
       isFree: false,
-      liveDemoUrl: "https://demo.example.com",
-      purchaseUrl: "https://gumroad.com/l/example",
+      liveDemoUrl: isUiUx ? "https://figma.com/@techdadu" : "https://demo.example.com",
+      purchaseUrl: isUiUx ? "https://gumroad.com/l/ui-kit" : "https://gumroad.com/l/example",
       previewImages: [],
       status: "published",
     });
@@ -172,6 +221,7 @@ export default function TemplatesAdminPage() {
       title: tmpl.title,
       slug: tmpl.slug,
       category: catId,
+      shortSummary: tmpl.shortSummary || "",
       description: tmpl.description || "",
       features: tmpl.features || [],
       techStack: tmpl.techStack || [],
@@ -234,8 +284,14 @@ export default function TemplatesAdminPage() {
 
     setFormError(null);
 
+    const shortSummary =
+      formData.shortSummary?.trim() ||
+      formData.description?.slice(0, 160) ||
+      formData.title;
+
     const submissionData = {
       ...formData,
+      shortSummary,
       price: formData.isFree ? 0 : formData.price,
     };
 
@@ -249,7 +305,7 @@ export default function TemplatesAdminPage() {
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 w-full">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-theme-border">
         <div>
@@ -258,7 +314,7 @@ export default function TemplatesAdminPage() {
               <Layers className="w-4 h-4" />
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-theme-fg">
-              Templates & Boilerplates
+              Templates & UI/UX Designs
             </h1>
             {isFetching && !isLoading && (
               <span title="Syncing...">
@@ -267,17 +323,66 @@ export default function TemplatesAdminPage() {
             )}
           </div>
           <p className="text-xs text-theme-muted mt-1">
-            Manage your developer kits, Next.js starters, and freebie downloadable codebases.
+            Manage your developer kits, Next.js starters, and Figma UI/UX design systems.
           </p>
         </div>
 
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => handleOpenAdd("uiux")}
+            className="btn-secondary text-xs py-2.5 px-3.5 inline-flex items-center gap-1.5 shadow-sm"
+          >
+            <Palette className="w-4 h-4" />
+            <span>+ Add UI/UX Kit</span>
+          </button>
+          <button
+            onClick={() => handleOpenAdd("template")}
+            className="btn-primary text-xs py-2.5 px-3.5 inline-flex items-center gap-1.5 shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Add Code Template</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Quick Category Filter Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
         <button
-          onClick={handleOpenAdd}
-          className="btn-primary text-xs py-2.5 px-4 inline-flex items-center gap-2 self-start sm:self-auto shadow-sm"
+          onClick={() => {
+            setSelectedCategory("all");
+            setPage(1);
+          }}
+          className={`px-3 py-1.5 rounded-xl font-semibold transition-colors flex items-center gap-1.5 shrink-0 ${
+            selectedCategory === "all"
+              ? "bg-theme-primary text-theme-primary-fg shadow-sm"
+              : "card-surface text-theme-muted hover:text-theme-fg border border-theme-border"
+          }`}
         >
-          <Plus className="w-4 h-4" />
-          <span>Add Template</span>
+          <Layers className="w-3.5 h-3.5" />
+          <span>All Digital Assets</span>
         </button>
+
+        {categories.map((cat: ICategory) => {
+          const isSelected = selectedCategory === cat._id;
+          const isUi = cat.slug.includes("ui") || cat.name.toLowerCase().includes("design");
+          return (
+            <button
+              key={cat._id}
+              onClick={() => {
+                setSelectedCategory(cat._id);
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-xl font-semibold transition-colors flex items-center gap-1.5 shrink-0 ${
+                isSelected
+                  ? "bg-theme-primary text-theme-primary-fg shadow-sm"
+                  : "card-surface text-theme-muted hover:text-theme-fg border border-theme-border"
+              }`}
+            >
+              {isUi ? <Palette className="w-3.5 h-3.5" /> : <Code2 className="w-3.5 h-3.5" />}
+              <span>{cat.name}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Success Notification Alert */}
@@ -497,21 +602,28 @@ export default function TemplatesAdminPage() {
           </div>
 
           {/* Pagination */}
-          {pagination && pagination.pages > 1 && (
+          {pagination && ((pagination.totalPages || pagination.pages || 1) > 1) && (
             <div className="p-4 border-t border-theme-border flex items-center justify-between text-xs text-theme-muted">
               <span>
-                Showing page {pagination.page} of {pagination.pages} ({pagination.total} templates)
+                Showing page {pagination.currentPage || pagination.page || 1} of{" "}
+                {pagination.totalPages || pagination.pages || 1} (
+                {pagination.totalItems ?? pagination.total ?? templates.length} templates)
               </span>
               <div className="flex gap-1.5">
                 <button
-                  disabled={pagination.page <= 1}
+                  disabled={(pagination.currentPage || pagination.page || 1) <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   className="btn-outline text-xs py-1 px-3 disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
-                  disabled={!pagination.hasMore}
+                  disabled={
+                    pagination.hasNextPage !== undefined
+                      ? !pagination.hasNextPage
+                      : (pagination.currentPage || pagination.page || 1) >=
+                        (pagination.totalPages || pagination.pages || 1)
+                  }
                   onClick={() => setPage((p) => p + 1)}
                   className="btn-outline text-xs py-1 px-3 disabled:opacity-50"
                 >
@@ -532,7 +644,7 @@ export default function TemplatesAdminPage() {
               ? `No templates matching "${searchQuery}".`
               : "Showcase your first developer boilerplate or freebie kit."}
           </p>
-          <button onClick={handleOpenAdd} className="btn-primary text-xs py-2 px-4 shadow-sm">
+          <button onClick={() => handleOpenAdd("template")} className="btn-primary text-xs py-2 px-4 shadow-sm">
             Add First Template
           </button>
         </div>
@@ -541,7 +653,7 @@ export default function TemplatesAdminPage() {
       {/* Modal: Add / Edit Template */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-          <div className="card-surface w-full max-w-2xl rounded-2xl p-6 sm:p-7 relative shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="card-surface w-full max-w-4xl rounded-2xl p-6 sm:p-8 relative shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-5 pb-3 border-b border-theme-border sticky top-0 bg-theme-surface z-10">
               <h2 className="text-base font-bold text-theme-fg flex items-center gap-2">
@@ -747,93 +859,47 @@ export default function TemplatesAdminPage() {
                 </div>
               </div>
 
-              {/* Preview Images: Cloudinary or URL */}
-              <div className="p-3 rounded-xl bg-theme-bg border border-theme-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold uppercase tracking-wider text-theme-fg">
-                    Preview Images ({formData.previewImages.length}) *
-                  </span>
-                  <label className="btn-outline text-xs py-1 px-3 cursor-pointer inline-flex items-center gap-1.5">
-                    {uploadingImage ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Upload className="w-3.5 h-3.5" />
-                    )}
-                    <span>{uploadingImage ? "Uploading..." : "Upload from Computer"}</span>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      disabled={uploadingImage}
-                    />
-                  </label>
-                </div>
+              {/* Preview Images: Interactive Gallery & Main Thumbnail Manager */}
+              <ImageGalleryManager
+                images={formData.previewImages}
+                onChange={(previewImages) => setFormData((p) => ({ ...p, previewImages }))}
+                onUpload={async (file) => {
+                  try {
+                    const uploaded = await uploadApi.uploadSingle(file, token, "tech-dadu/templates");
+                    return uploaded.url || null;
+                  } catch (err: any) {
+                    setFormError(err?.message || "Failed to upload preview image");
+                    return null;
+                  }
+                }}
+                isUploading={uploadingImage}
+                label="Template Screenshots / Gallery"
+                required
+              />
 
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={imageUrlInput}
-                    onChange={(e) => setImageUrlInput(e.target.value)}
-                    placeholder="Or paste external image URL..."
-                    className="input-theme text-xs py-1.5"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (imageUrlInput.trim()) {
-                        setFormData((p) => ({ ...p, previewImages: [...p.previewImages, imageUrlInput.trim()] }));
-                        setImageUrlInput("");
-                      }
-                    }}
-                    className="btn-outline text-xs py-1.5 px-3 shrink-0"
-                  >
-                    Add URL
-                  </button>
-                </div>
-
-                {/* Thumbnails preview */}
-                {formData.previewImages.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {formData.previewImages.map((img, idx) => (
-                      <div
-                        key={idx}
-                        className="relative group w-20 h-14 rounded-lg overflow-hidden border border-theme-border bg-theme-surface"
-                      >
-                        <img src={img} alt="Thumbnail" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFormData((p) => ({
-                              ...p,
-                              previewImages: p.previewImages.filter((_, i) => i !== idx),
-                            }))
-                          }
-                          className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Description */}
+              {/* Short Summary */}
               <div>
                 <label className="block font-semibold uppercase tracking-wider text-theme-fg mb-1">
-                  Description / Features *
+                  Short Summary / Tagline
                 </label>
-                <textarea
-                  rows={3}
-                  required
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Explain what's included in this template kit..."
-                  className="input-theme text-xs py-2 resize-none"
+                <input
+                  type="text"
+                  value={formData.shortSummary || ""}
+                  onChange={(e) => setFormData({ ...formData, shortSummary: e.target.value })}
+                  placeholder="e.g. Modern fullstack SaaS starter built with Next.js 16 and Supabase..."
+                  className="input-theme text-xs py-2"
                 />
               </div>
+
+              {/* Description / Features with Rich Text Editor */}
+              <RichTextEditor
+                label="Description & Features"
+                required
+                value={formData.description}
+                onChange={(val) => setFormData({ ...formData, description: val })}
+                placeholder="Explain what's included in this template kit, tech features, architecture, links or screenshots..."
+                rows={8}
+              />
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-2 pt-4 border-t border-theme-border sticky bottom-0 bg-theme-surface z-10">

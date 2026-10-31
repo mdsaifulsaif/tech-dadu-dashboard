@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { Shield, Sparkles, Bell, Wifi } from "lucide-react";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 
 export default function AdminHeader() {
   const { data: session } = useSession();
@@ -17,6 +18,8 @@ export default function AdminHeader() {
       </div>
 
       <div className="flex items-center gap-3 text-xs">
+        <ThemeToggle />
+
         {session?.user && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-bg border border-theme-border">
             <Shield className="w-3.5 h-3.5 text-theme-primary" />

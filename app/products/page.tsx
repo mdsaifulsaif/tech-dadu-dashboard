@@ -25,6 +25,8 @@ import {
 import { productApi, categoryApi, uploadApi } from "@/lib/api";
 import { IProduct, IProductInput } from "@/types";
 import { ICategory } from "@/types/category";
+import { ImageGalleryManager } from "@/components/common/ImageGalleryManager";
+import { RichTextEditor } from "@/components/common/RichTextEditor";
 
 export default function ProductsAdminPage() {
   const queryClient = useQueryClient();
@@ -293,7 +295,7 @@ export default function ProductsAdminPage() {
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 w-full">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-theme-border">
         <div>
@@ -561,7 +563,7 @@ export default function ProductsAdminPage() {
       {/* Modal: Add / Edit Product */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-          <div className="card-surface w-full max-w-2xl rounded-2xl p-6 sm:p-7 relative shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="card-surface w-full max-w-4xl rounded-2xl p-6 sm:p-8 relative shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-5 pb-3 border-b border-theme-border sticky top-0 bg-theme-surface z-10">
               <h2 className="text-base font-bold text-theme-fg flex items-center gap-2">
@@ -768,68 +770,23 @@ export default function ProductsAdminPage() {
                 </div>
               </div>
 
-              {/* Images: Cloudinary Upload or URL */}
-              <div className="p-3 rounded-xl bg-theme-bg border border-theme-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold uppercase tracking-wider text-theme-fg">
-                    Product Images ({formData.images.length}) *
-                  </span>
-                  <label className="btn-outline text-xs py-1 px-3 cursor-pointer inline-flex items-center gap-1.5">
-                    {uploadingImage ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Upload className="w-3.5 h-3.5" />
-                    )}
-                    <span>{uploadingImage ? "Uploading..." : "Upload from Computer"}</span>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      disabled={uploadingImage}
-                    />
-                  </label>
-                </div>
-
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={imageUrlInput}
-                    onChange={(e) => setImageUrlInput(e.target.value)}
-                    placeholder="Or paste external image URL..."
-                    className="input-theme text-xs py-1.5"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddImageUrl}
-                    className="btn-outline text-xs py-1.5 px-3 shrink-0"
-                  >
-                    Add URL
-                  </button>
-                </div>
-
-                {/* Thumbnails preview */}
-                {formData.images.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {formData.images.map((img, idx) => (
-                      <div
-                        key={idx}
-                        className="relative group w-16 h-16 rounded-lg overflow-hidden border border-theme-border bg-theme-surface"
-                      >
-                        <img src={img} alt="Thumbnail" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(idx)}
-                          className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {/* Images: Interactive Gallery & Main Thumbnail Manager */}
+              <ImageGalleryManager
+                images={formData.images}
+                onChange={(images) => setFormData((p) => ({ ...p, images }))}
+                onUpload={async (file) => {
+                  try {
+                    const uploaded = await uploadApi.uploadSingle(file, token, "tech-dadu/products");
+                    return uploaded.url || null;
+                  } catch (err: any) {
+                    setFormError(err?.message || "Failed to upload image");
+                    return null;
+                  }
+                }}
+                isUploading={uploadingImage}
+                label="Product Images / Gallery"
+                required
+              />
 
               {/* Short Summary */}
               <div>
@@ -955,20 +912,15 @@ export default function ProductsAdminPage() {
                 </div>
               </div>
 
-              {/* Description */}
-              <div>
-                <label className="block font-semibold uppercase tracking-wider text-theme-fg mb-1">
-                  Detailed Review / Description *
-                </label>
-                <textarea
-                  rows={4}
-                  required
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="In-depth analysis, build quality, typing sound, ergonomics, and final verdict..."
-                  className="input-theme text-xs py-2 resize-none"
-                />
-              </div>
+              {/* Rich Text Editor for Detailed Review / Description */}
+              <RichTextEditor
+                label="Detailed Review / In-Depth Verdict"
+                required
+                value={formData.description}
+                onChange={(val) => setFormData({ ...formData, description: val })}
+                placeholder="In-depth analysis, build quality, typing sound, ergonomics, insert images, links, or bullet points..."
+                rows={8}
+              />
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-2 pt-4 border-t border-theme-border sticky bottom-0 bg-theme-surface z-10">

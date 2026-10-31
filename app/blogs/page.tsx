@@ -22,6 +22,7 @@ import {
 import { blogApi, categoryApi, uploadApi } from "@/lib/api";
 import { IBlog, IBlogInput } from "@/types";
 import { ICategory } from "@/types/category";
+import { RichTextEditor } from "@/components/common/RichTextEditor";
 
 export default function BlogsAdminPage() {
   const queryClient = useQueryClient();
@@ -226,7 +227,7 @@ export default function BlogsAdminPage() {
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 w-full">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-theme-border">
         <div>
@@ -483,7 +484,7 @@ export default function BlogsAdminPage() {
       {/* Modal: Add / Edit Blog */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-          <div className="card-surface w-full max-w-3xl rounded-2xl p-6 sm:p-7 relative shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="card-surface w-full max-w-4xl rounded-2xl p-6 sm:p-8 relative shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-5 pb-3 border-b border-theme-border sticky top-0 bg-theme-surface z-10">
               <h2 className="text-base font-bold text-theme-fg flex items-center gap-2">
@@ -684,20 +685,15 @@ export default function BlogsAdminPage() {
                 </div>
               </div>
 
-              {/* Article Content (Markdown) */}
-              <div>
-                <label className="block font-semibold uppercase tracking-wider text-theme-fg mb-1">
-                  Markdown Content *
-                </label>
-                <textarea
-                  rows={10}
-                  required
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="Write your article in Markdown. Use # for headings, - for lists, and embed product review sections..."
-                  className="input-theme text-xs py-2 font-mono leading-relaxed resize-y"
-                />
-              </div>
+              {/* Article Content with Visual WYSIWYG Editor */}
+              <RichTextEditor
+                label="Article Content"
+                required
+                value={formData.content}
+                onChange={(val) => setFormData({ ...formData, content: val })}
+                placeholder="Write your article here. Use bold, headings, lists, external URLs and images..."
+                rows={12}
+              />
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-2 pt-4 border-t border-theme-border sticky bottom-0 bg-theme-surface z-10">
