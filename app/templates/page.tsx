@@ -66,6 +66,7 @@ export default function TemplatesAdminPage() {
     liveDemoUrl: "",
     purchaseUrl: "",
     previewImages: [],
+    comparison: { isFeatured: false, badge: "Best Overall", bestFor: "", keyHighlight: "" },
     status: "published",
   });
 
@@ -205,6 +206,7 @@ export default function TemplatesAdminPage() {
       liveDemoUrl: isUiUx ? "https://figma.com/@techdadu" : "https://demo.example.com",
       purchaseUrl: isUiUx ? "https://gumroad.com/l/ui-kit" : "https://gumroad.com/l/example",
       previewImages: [],
+      comparison: { isFeatured: false, badge: "Best Overall", bestFor: "", keyHighlight: "" },
       status: "published",
     });
     setTechInput("");
@@ -231,6 +233,7 @@ export default function TemplatesAdminPage() {
       liveDemoUrl: tmpl.liveDemoUrl || "",
       purchaseUrl: tmpl.purchaseUrl || "",
       previewImages: tmpl.previewImages || [],
+      comparison: tmpl.comparison || { isFeatured: false, badge: "Best Overall", bestFor: "", keyHighlight: "" },
       status: tmpl.status || "published",
     });
     setTechInput("");
@@ -496,9 +499,16 @@ export default function TemplatesAdminPage() {
                             className="w-12 h-9 rounded-lg object-cover bg-theme-bg border border-theme-border shrink-0"
                           />
                           <div>
-                            <p className="font-bold text-theme-fg line-clamp-1 max-w-xs">
-                              {tmpl.title}
-                            </p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-bold text-theme-fg line-clamp-1 max-w-xs">
+                                {tmpl.title}
+                              </p>
+                              {tmpl.comparison?.isFeatured && (
+                                <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+                                  🏆 {tmpl.comparison.badge || "Compare Pick"}
+                                </span>
+                              )}
+                            </div>
                             <span className="text-[11px] font-mono text-theme-muted">
                               /{tmpl.slug}
                             </span>
@@ -807,6 +817,104 @@ export default function TemplatesAdminPage() {
                     className="input-theme text-xs py-2 font-mono"
                   />
                 </div>
+              </div>
+
+              {/* Hero Comparison Table Settings ("Don't buy before you compare") */}
+              <div className="p-4 rounded-xl border border-indigo-500/20 bg-indigo-500/5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="templateComparisonFeatured"
+                    checked={formData.comparison?.isFeatured || false}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        comparison: {
+                          ...formData.comparison,
+                          isFeatured: e.target.checked,
+                          badge: formData.comparison?.badge || "Best Overall",
+                          bestFor: formData.comparison?.bestFor || "",
+                          keyHighlight: formData.comparison?.keyHighlight || "",
+                        },
+                      })
+                    }
+                    className="w-4 h-4 rounded text-indigo-600 cursor-pointer"
+                  />
+                  <label htmlFor="templateComparisonFeatured" className="font-semibold text-theme-fg cursor-pointer text-xs flex items-center gap-1.5">
+                    <span>🏆 Feature in Hero Comparison Table (&quot;Don&apos;t buy before you compare&quot;)</span>
+                  </label>
+                </div>
+
+                {formData.comparison?.isFeatured && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-theme-muted mb-1">
+                        OUR PICK Badge
+                      </label>
+                      <select
+                        value={formData.comparison.badge || "Best Overall"}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            comparison: {
+                              ...formData.comparison,
+                              badge: e.target.value,
+                            },
+                          })
+                        }
+                        className="input-theme text-xs py-1.5"
+                      >
+                        <option value="Best Overall">Best Overall (Purple)</option>
+                        <option value="Best Value">Best Value (Green)</option>
+                        <option value="Best Wireless">Best Wireless (Orange)</option>
+                        <option value="Best Premium">Best Premium (Gold)</option>
+                        <option value="Editor's Choice">Editor&apos;s Choice (Cyan)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-theme-muted mb-1">
+                        BEST FOR Tagline
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Production SaaS, Rapid MVP"
+                        value={formData.comparison.bestFor || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            comparison: {
+                              ...formData.comparison,
+                              bestFor: e.target.value,
+                            },
+                          })
+                        }
+                        className="input-theme text-xs py-1.5"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-theme-muted mb-1">
+                        Standout Tech / Spec
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Next.js 16 + Stripe, Auto-Layout v5"
+                        value={formData.comparison.keyHighlight || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            comparison: {
+                              ...formData.comparison,
+                              keyHighlight: e.target.value,
+                            },
+                          })
+                        }
+                        className="input-theme text-xs py-1.5"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Tech Stack Tags */}

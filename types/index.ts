@@ -19,6 +19,20 @@ export interface IProductSEO {
   ogImage?: string;
 }
 
+export interface IProductComparison {
+  isFeatured?: boolean;
+  badge?: string;
+  bestFor?: string;
+  keyHighlight?: string;
+}
+
+export interface IDigitalProductComparison {
+  isFeatured?: boolean;
+  badge?: string;
+  bestFor?: string;
+  keyHighlight?: string;
+}
+
 export interface IProduct {
   _id: string;
   title: string;
@@ -34,6 +48,7 @@ export interface IProduct {
   cons: string[];
   badges: string[];
   isFeatured: boolean;
+  comparison?: IProductComparison;
   status: "draft" | "published";
   clickCount: number;
   seo?: IProductSEO;
@@ -59,6 +74,7 @@ export interface IProductInput {
   cons?: string[];
   badges?: string[];
   isFeatured?: boolean;
+  comparison?: IProductComparison;
   status?: "draft" | "published";
   seo?: IProductSEO;
 }
@@ -78,6 +94,7 @@ export interface IDigitalProduct {
   purchaseUrl: string;
   previewImages: string[];
   downloadCount: number;
+  comparison?: IDigitalProductComparison;
   status: "draft" | "published";
   createdAt: string;
   updatedAt: string;
@@ -96,6 +113,7 @@ export interface IDigitalProductInput {
   liveDemoUrl: string;
   purchaseUrl: string;
   previewImages: string[];
+  comparison?: IDigitalProductComparison;
   status?: "draft" | "published";
 }
 

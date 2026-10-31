@@ -69,6 +69,7 @@ export default function ProductsAdminPage() {
     cons: [],
     badges: ["Top Pick"],
     isFeatured: false,
+    comparison: { isFeatured: false, badge: "Best Overall", bestFor: "" },
     status: "published",
   });
 
@@ -170,6 +171,7 @@ export default function ProductsAdminPage() {
       cons: ["Slightly heavier"],
       badges: ["Top Pick"],
       isFeatured: false,
+      comparison: { isFeatured: false, badge: "Best Overall", bestFor: "" },
       status: "published",
     });
     setImageUrlInput("");
@@ -204,6 +206,7 @@ export default function ProductsAdminPage() {
       cons: prod.cons || [],
       badges: prod.badges || [],
       isFeatured: prod.isFeatured || false,
+      comparison: prod.comparison || { isFeatured: false, badge: "Best Overall", bestFor: "" },
       status: prod.status || "published",
     });
     setImageUrlInput("");
@@ -446,6 +449,11 @@ export default function ProductsAdminPage() {
                                   Top Pick
                                 </span>
                               )}
+                              {prod.comparison?.isFeatured && (
+                                <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+                                  🏆 {prod.comparison.badge || "Compare Pick"}
+                                </span>
+                              )}
                             </div>
                             <span className="text-[11px] font-mono text-theme-muted">
                               /{prod.slug}
@@ -667,6 +675,103 @@ export default function ProductsAdminPage() {
                     Saif&apos;s Top Pick ⭐
                   </label>
                 </div>
+              </div>
+
+              {/* Hero Comparison Table Settings ("Don't buy before you compare") */}
+              <div className="p-4 rounded-xl border border-indigo-500/20 bg-indigo-500/5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="comparisonFeatured"
+                    checked={formData.comparison?.isFeatured || false}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        comparison: {
+                          ...formData.comparison,
+                          isFeatured: e.target.checked,
+                          badge: formData.comparison?.badge || "Best Overall",
+                          bestFor: formData.comparison?.bestFor || "",
+                        },
+                      })
+                    }
+                    className="w-4 h-4 rounded text-indigo-600 cursor-pointer"
+                  />
+                  <label htmlFor="comparisonFeatured" className="font-semibold text-theme-fg cursor-pointer text-xs flex items-center gap-1.5">
+                    <span>🏆 Feature in Hero Comparison Table (&quot;Don&apos;t buy before you compare&quot;)</span>
+                  </label>
+                </div>
+
+                {formData.comparison?.isFeatured && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-theme-muted mb-1">
+                        OUR PICK Badge Color
+                      </label>
+                      <select
+                        value={formData.comparison.badge || "Best Overall"}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            comparison: {
+                              ...formData.comparison,
+                              badge: e.target.value,
+                            },
+                          })
+                        }
+                        className="input-theme text-xs py-1.5"
+                      >
+                        <option value="Best Overall">Best Overall (Purple)</option>
+                        <option value="Best Value">Best Value (Green)</option>
+                        <option value="Best Wireless">Best Wireless (Orange)</option>
+                        <option value="Best Premium">Best Premium (Gold)</option>
+                        <option value="Editor's Choice">Editor&apos;s Choice (Cyan)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-theme-muted mb-1">
+                        BEST FOR Tagline
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Everyday typing, Tight budgets"
+                        value={formData.comparison.bestFor || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            comparison: {
+                              ...formData.comparison,
+                              bestFor: e.target.value,
+                            },
+                          })
+                        }
+                        className="input-theme text-xs py-1.5"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-theme-muted mb-1">
+                        Standout Spec / Highlight
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Gasket mount, 200hr battery"
+                        value={formData.comparison.keyHighlight || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            comparison: {
+                              ...formData.comparison,
+                              keyHighlight: e.target.value,
+                            },
+                          })
+                        }
+                        className="input-theme text-xs py-1.5"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Price & Rating */}
