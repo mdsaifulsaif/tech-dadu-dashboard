@@ -1,3 +1,13 @@
+import {
+  IProduct,
+  IProductInput,
+  IDigitalProduct,
+  IDigitalProductInput,
+  IBlog,
+  IBlogInput,
+  ISubscriber,
+  ISiteSettings,
+} from "@/types";
 import { ICategory, ICategoryInput } from "@/types/category";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
@@ -43,7 +53,9 @@ export async function apiRequest<T = any>(
   return data;
 }
 
-// Category API Endpoints
+// ============================================================================
+// 1. Categories API
+// ============================================================================
 export const categoryApi = {
   getAll: (type?: string) => {
     const query = type && type !== "all" ? `?type=${type}` : "";
@@ -82,3 +94,266 @@ export const categoryApi = {
     ),
 };
 
+// ============================================================================
+// 2. Products / Desk Gear API
+// ============================================================================
+export const productApi = {
+  getAll: (params: Record<string, any> = {}) => {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+    const queryString = searchParams.toString();
+    return apiRequest<{
+      products: IProduct[];
+      pagination: {
+        total: number;
+        page: number;
+        pages: number;
+        limit: number;
+        hasMore: boolean;
+      };
+    }>(`/products${queryString ? `?${queryString}` : ""}`);
+  },
+
+  getById: (id: string) => apiRequest<IProduct>(`/products/id/${id}`),
+
+  create: (data: IProductInput, token?: string) =>
+    apiRequest<IProduct>(
+      "/products",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    ),
+
+  update: (id: string, data: Partial<IProductInput>, token?: string) =>
+    apiRequest<IProduct>(
+      `/products/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+      token
+    ),
+
+  delete: (id: string, token?: string) =>
+    apiRequest<{ message: string; deletedId: string }>(
+      `/products/${id}`,
+      {
+        method: "DELETE",
+      },
+      token
+    ),
+};
+
+// ============================================================================
+// 3. Digital Templates / Boilerplates API
+// ============================================================================
+export const templateApi = {
+  getAll: (params: Record<string, any> = {}) => {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+    const queryString = searchParams.toString();
+    return apiRequest<{
+      products: IDigitalProduct[];
+      pagination: {
+        total: number;
+        page: number;
+        pages: number;
+        limit: number;
+        hasMore: boolean;
+      };
+    }>(`/templates${queryString ? `?${queryString}` : ""}`);
+  },
+
+  getById: (id: string) => apiRequest<IDigitalProduct>(`/templates/id/${id}`),
+
+  create: (data: IDigitalProductInput, token?: string) =>
+    apiRequest<IDigitalProduct>(
+      "/templates",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    ),
+
+  update: (id: string, data: Partial<IDigitalProductInput>, token?: string) =>
+    apiRequest<IDigitalProduct>(
+      `/templates/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+      token
+    ),
+
+  delete: (id: string, token?: string) =>
+    apiRequest<{ message: string; deletedId: string }>(
+      `/templates/${id}`,
+      {
+        method: "DELETE",
+      },
+      token
+    ),
+};
+
+// ============================================================================
+// 4. Guides & Blogs API
+// ============================================================================
+export const blogApi = {
+  getAll: (params: Record<string, any> = {}) => {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+    const queryString = searchParams.toString();
+    return apiRequest<{
+      blogs: IBlog[];
+      pagination: {
+        total: number;
+        page: number;
+        pages: number;
+        limit: number;
+        hasMore: boolean;
+      };
+    }>(`/blogs${queryString ? `?${queryString}` : ""}`);
+  },
+
+  getById: (id: string) => apiRequest<IBlog>(`/blogs/id/${id}`),
+
+  create: (data: IBlogInput, token?: string) =>
+    apiRequest<IBlog>(
+      "/blogs",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    ),
+
+  update: (id: string, data: Partial<IBlogInput>, token?: string) =>
+    apiRequest<IBlog>(
+      `/blogs/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+      token
+    ),
+
+  delete: (id: string, token?: string) =>
+    apiRequest<{ message: string; deletedId: string }>(
+      `/blogs/${id}`,
+      {
+        method: "DELETE",
+      },
+      token
+    ),
+};
+
+// ============================================================================
+// 5. Subscribers / Leads API
+// ============================================================================
+export const subscriberApi = {
+  getAll: (page: number = 1, limit: number = 20, token?: string) =>
+    apiRequest<{
+      subscribers: ISubscriber[];
+      pagination: {
+        total: number;
+        page: number;
+        pages: number;
+        limit: number;
+      };
+    }>(`/newsletter?page=${page}&limit=${limit}`, {}, token),
+
+  broadcast: (subject: string, content: string, token?: string) =>
+    apiRequest<{ message: string; sentCount: number }>(
+      "/newsletter/broadcast",
+      {
+        method: "POST",
+        body: JSON.stringify({ subject, content }),
+      },
+      token
+    ),
+};
+
+// ============================================================================
+// 6. Site Settings API
+// ============================================================================
+export const siteSettingApi = {
+  get: () => apiRequest<ISiteSettings>("/settings"),
+
+  update: (data: Partial<ISiteSettings>, token?: string) =>
+    apiRequest<ISiteSettings>(
+      "/settings",
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+      token
+    ),
+};
+
+// ============================================================================
+// 7. Analytics API
+// ============================================================================
+export const analyticsApi = {
+  getOverview: (token?: string) =>
+    apiRequest<{
+      counts: {
+        products: number;
+        templates: number;
+        blogs: number;
+        subscribers: number;
+        clicks: number;
+      };
+      topProducts: IProduct[];
+      platformBreakdown: { platform: string; count: number }[];
+      referrerBreakdown: { referrer: string; count: number }[];
+      recentClicks: any[];
+    }>("/analytics/overview", {}, token),
+};
+
+// ============================================================================
+// 8. Cloudinary Upload API
+// ============================================================================
+export const uploadApi = {
+  uploadSingle: async (
+    file: File,
+    token?: string,
+    folder: string = "tech-dadu"
+  ): Promise<{ url: string; publicId: string }> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("folder", folder);
+
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}/upload/single`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    const res = await response.json();
+    if (!response.ok || !res.success) {
+      throw new Error(res.message || "Image upload failed");
+    }
+
+    return res.data;
+  },
+};

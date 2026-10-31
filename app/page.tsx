@@ -12,9 +12,11 @@ import {
   MousePointerClick,
   Eye,
   Settings,
-  ShieldAlert,
+  FolderTree,
 } from "lucide-react";
 import { auth } from "@/auth";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
 export default async function AdminDashboardPage() {
   const session = await auth();
@@ -23,6 +25,29 @@ export default async function AdminDashboardPage() {
   if (!session?.user || (session.user as any).role !== "admin") {
     redirect("/login");
   }
+
+  const token = (session.user as any).accessToken;
+
+  // Fetch live stats from backend
+  let stats: any = {
+    counts: { products: 0, templates: 0, blogs: 0, subscribers: 0, clicks: 0 },
+    topProducts: [],
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/analytics/overview`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    const result = await res.json();
+    if (result.success && result.data) {
+      stats = result.data;
+    }
+  } catch (err) {
+    // Graceful fallback
+  }
+
+  const counts = stats.counts;
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -81,7 +106,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-extrabold text-theme-fg">Catalog</div>
+            <div className="text-3xl font-extrabold text-theme-fg">{counts?.products || 0}</div>
             <p className="text-xs text-theme-muted mt-1">Amazon & Brand Gear</p>
           </div>
           <div className="mt-4 pt-3 border-t border-theme-border flex items-center justify-between text-xs">
@@ -103,7 +128,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-extrabold text-theme-fg">Templates</div>
+            <div className="text-3xl font-extrabold text-theme-fg">{counts?.templates || 0}</div>
             <p className="text-xs text-theme-muted mt-1">Next.js & MERN Starters</p>
           </div>
           <div className="mt-4 pt-3 border-t border-theme-border flex items-center justify-between text-xs">
@@ -125,7 +150,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-extrabold text-theme-fg">Articles</div>
+            <div className="text-3xl font-extrabold text-theme-fg">{counts?.blogs || 0}</div>
             <p className="text-xs text-theme-muted mt-1">Listicles & Tech Reviews</p>
           </div>
           <div className="mt-4 pt-3 border-t border-theme-border flex items-center justify-between text-xs">
@@ -147,7 +172,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-extrabold text-theme-fg">Audience</div>
+            <div className="text-3xl font-extrabold text-theme-fg">{counts?.subscribers || 0}</div>
             <p className="text-xs text-theme-muted mt-1">Pinterest & Web Leads</p>
           </div>
           <div className="mt-4 pt-3 border-t border-theme-border flex items-center justify-between text-xs">
@@ -181,26 +206,28 @@ export default async function AdminDashboardPage() {
                 <MousePointerClick className="w-4 h-4 text-theme-primary" />
                 <span>Affiliate Clicks</span>
               </div>
-              <div className="text-xl font-extrabold text-theme-fg">Tracking Live</div>
-              <span className="text-[11px] text-theme-success font-medium">Amazon & AliExpress</span>
+              <div className="text-2xl font-extrabold text-theme-fg">{counts?.clicks || 0}</div>
+              <span className="text-[11px] text-theme-success font-medium">Tracking Live</span>
             </div>
 
             <div className="p-4 rounded-xl bg-theme-bg border border-theme-border">
               <div className="flex items-center gap-2 text-xs text-theme-muted mb-1">
-                <TrendingUp className="w-4 h-4 text-theme-secondary" />
-                <span>Pinterest Traffic</span>
+                <FolderTree className="w-4 h-4 text-theme-secondary" />
+                <span>Categories</span>
               </div>
-              <div className="text-xl font-extrabold text-theme-fg">400k+ Mo</div>
-              <span className="text-[11px] text-theme-muted">Organic Pin Impressions</span>
+              <div className="text-2xl font-extrabold text-theme-fg">Taxonomy</div>
+              <Link href="/categories" className="text-[11px] text-theme-primary font-medium hover:underline">
+                Manage Categories &rarr;
+              </Link>
             </div>
 
             <div className="p-4 rounded-xl bg-theme-bg border border-theme-border">
               <div className="flex items-center gap-2 text-xs text-theme-muted mb-1">
-                <Eye className="w-4 h-4 text-theme-accent" />
-                <span>SEO Traffic</span>
+                <TrendingUp className="w-4 h-4 text-theme-accent" />
+                <span>Top Traffic</span>
               </div>
-              <div className="text-xl font-extrabold text-theme-fg">Top 10 Guides</div>
-              <span className="text-[11px] text-theme-muted">Google Search Console</span>
+              <div className="text-2xl font-extrabold text-theme-fg">Pinterest</div>
+              <span className="text-[11px] text-theme-muted">Organic Referral Pins</span>
             </div>
           </div>
         </div>
@@ -231,7 +258,7 @@ export default async function AdminDashboardPage() {
               <div className="flex items-center justify-between p-2.5 rounded-lg bg-theme-bg border border-theme-border">
                 <span className="text-theme-fg font-medium">Cloudinary Storage</span>
                 <span className="inline-flex items-center gap-1 font-semibold text-theme-primary">
-                  dvpfgfwj4
+                  Connected
                 </span>
               </div>
             </div>
