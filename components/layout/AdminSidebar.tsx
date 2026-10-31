@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import {
@@ -41,22 +42,19 @@ export default function AdminSidebar() {
     <aside className="w-64 shrink-0 bg-theme-surface border-r border-theme-border flex flex-col justify-between h-screen sticky top-0 transition-colors">
       <div>
         {/* Dashboard Brand Header */}
-        <div className="h-16 px-6 flex items-center justify-between border-b border-theme-border">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-theme-primary flex items-center justify-center text-theme-primary-fg shadow-sm">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-base leading-none text-theme-fg">
-                  Tech<span className="text-theme-primary">Dadu</span>
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-theme-primary-light text-theme-primary">
-                  Admin
-                </span>
-              </div>
-              <span className="text-[10px] text-theme-muted font-medium">Control Center</span>
-            </div>
+        <div className="h-16 px-4 flex items-center justify-between border-b border-theme-border">
+          <Link href="/" className="flex items-center gap-2 group min-w-0">
+            <Image
+              src="/images/logo.png"
+              alt="Tech Dadu Logo"
+              width={140}
+              height={32}
+              priority
+              className="h-7 w-auto object-contain transition-transform group-hover:scale-102 dark:drop-shadow-[0_0_1px_rgba(255,255,255,0.85)] shrink-0"
+            />
+            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-theme-primary-light text-theme-primary shrink-0">
+              Admin
+            </span>
           </Link>
         </div>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -146,9 +147,11 @@ export default function AnalyticsAdminPage() {
                         <span className="w-6 h-6 rounded-full bg-theme-surface border border-theme-border flex items-center justify-center font-bold text-theme-muted text-[11px]">
                           #{idx + 1}
                         </span>
-                        <img
+                        <Image
                           src={p.images?.[0] || "/next.svg"}
                           alt={p.title}
+                          width={40}
+                          height={40}
                           className="w-10 h-10 rounded-lg object-cover bg-theme-surface border border-theme-border shrink-0"
                         />
                         <div>

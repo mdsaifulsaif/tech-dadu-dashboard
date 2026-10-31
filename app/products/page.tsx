@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef } from "react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -428,9 +429,11 @@ export default function ProductsAdminPage() {
                       {/* Product Name & Thumbnail */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <img
+                          <Image
                             src={mainImg}
                             alt={prod.title}
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-lg object-cover bg-theme-bg border border-theme-border shrink-0"
                           />
                           <div>

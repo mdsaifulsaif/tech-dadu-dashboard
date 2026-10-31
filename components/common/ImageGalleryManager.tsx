@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import Image from "next/image";
 import {
   Upload,
   Link as LinkIcon,
@@ -153,7 +154,7 @@ export const ImageGalleryManager: React.FC<ImageGalleryManagerProps> = ({
                     : "border-theme-border bg-theme-surface"
                 }`}
               >
-                <img src={img} alt={`Gallery item ${idx + 1}`} className="w-full h-full object-cover" />
+                <Image src={img} alt={`Gallery item ${idx + 1}`} fill sizes="120px" className="object-cover" />
 
                 {/* Badge if Main Thumbnail */}
                 {isMain ? (

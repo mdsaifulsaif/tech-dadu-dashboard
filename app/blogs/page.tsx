@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -358,9 +359,11 @@ export default function BlogsAdminPage() {
                       {/* Title & Cover */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <img
+                          <Image
                             src={b.coverImage || "/next.svg"}
                             alt={b.title}
+                            width={48}
+                            height={36}
                             className="w-12 h-9 rounded-lg object-cover bg-theme-bg border border-theme-border shrink-0"
                           />
                           <div>
@@ -608,10 +611,11 @@ export default function BlogsAdminPage() {
 
                 {formData.coverImage && (
                   <div className="relative w-full h-36 rounded-lg overflow-hidden border border-theme-border">
-                    <img
+                    <Image
                       src={formData.coverImage}
                       alt="Cover Preview"
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   </div>
                 )}

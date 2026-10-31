@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { ShieldCheck, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
@@ -44,9 +45,14 @@ export default function AdminLoginPage() {
         <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-theme-primary-light blur-2xl pointer-events-none" />
 
         <div className="text-center mb-8">
-          <div className="inline-flex w-14 h-14 rounded-2xl bg-theme-primary-light text-theme-primary items-center justify-center mb-3 shadow-inner">
-            <ShieldCheck className="w-8 h-8" />
-          </div>
+          <Image
+            src="/images/logo.png"
+            alt="Tech Dadu Admin Logo"
+            width={200}
+            height={48}
+            priority
+            className="h-12 w-auto mx-auto mb-3 object-contain dark:drop-shadow-[0_0_1px_rgba(255,255,255,0.85)]"
+          />
           <h1 className="text-2xl font-extrabold tracking-tight text-theme-fg">
             Tech<span className="text-theme-primary">Dadu</span> Admin
           </h1>

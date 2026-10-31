@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -487,9 +488,11 @@ export default function TemplatesAdminPage() {
                       {/* Name & Thumbnail */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <img
+                          <Image
                             src={mainImg}
                             alt={tmpl.title}
+                            width={48}
+                            height={36}
                             className="w-12 h-9 rounded-lg object-cover bg-theme-bg border border-theme-border shrink-0"
                           />
                           <div>
