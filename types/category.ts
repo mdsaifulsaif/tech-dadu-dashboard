@@ -7,6 +7,8 @@ export interface ICategory {
   image?: string;
   type: "product" | "blog" | "template" | "all";
   order: number;
+  showInHero?: boolean;
+  isDefaultHero?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -19,5 +21,6 @@ export interface ICategoryInput {
   image?: string;
   type: "product" | "blog" | "template" | "all";
   order?: number;
+  showInHero?: boolean;
+  isDefaultHero?: boolean;
 }
-
