@@ -311,8 +311,17 @@ export const siteSettingApi = {
 };
 
 // ============================================================================
-// 7. Analytics API
+// 8. On-Demand Frontend Cache Revalidation
 // ============================================================================
+export const triggerFrontendRevalidation = async (path = "/") => {
+  try {
+    const frontendUrl =
+      process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3001";
+    await fetch(`${frontendUrl}/api/revalidate?path=${path}`, {
+      method: "POST",
+    });
+  } catch {}
+};
 export const analyticsApi = {
   getOverview: (token?: string) =>
     apiRequest<{

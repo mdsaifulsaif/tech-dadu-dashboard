@@ -23,7 +23,7 @@ import {
   RefreshCw,
   Image as ImageIcon,
 } from "lucide-react";
-import { productApi, categoryApi, uploadApi } from "@/lib/api";
+import { productApi, categoryApi, uploadApi, triggerFrontendRevalidation } from "@/lib/api";
 import { IProduct, IProductInput } from "@/types";
 import { ICategory } from "@/types/category";
 import { ImageGalleryManager } from "@/components/common/ImageGalleryManager";
@@ -117,6 +117,7 @@ export default function ProductsAdminPage() {
     mutationFn: (newProduct: IProductInput) => productApi.create(newProduct, token),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      triggerFrontendRevalidation("/");
       setIsModalOpen(false);
       setSuccessMsg(`Product "${res.data?.title}" created successfully!`);
       setTimeout(() => setSuccessMsg(null), 4000);
@@ -132,6 +133,7 @@ export default function ProductsAdminPage() {
       productApi.update(id, data, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      triggerFrontendRevalidation("/");
       setIsModalOpen(false);
       setSuccessMsg("Product updated successfully!");
       setTimeout(() => setSuccessMsg(null), 4000);
@@ -146,6 +148,7 @@ export default function ProductsAdminPage() {
     mutationFn: (id: string) => productApi.delete(id, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      triggerFrontendRevalidation("/");
       setSuccessMsg("Product deleted successfully.");
       setTimeout(() => setSuccessMsg(null), 4000);
     },

@@ -23,7 +23,7 @@ import {
   Code2,
   Palette,
 } from "lucide-react";
-import { templateApi, categoryApi, uploadApi } from "@/lib/api";
+import { templateApi, categoryApi, uploadApi, triggerFrontendRevalidation } from "@/lib/api";
 import { IDigitalProduct, IDigitalProductInput } from "@/types";
 import { ICategory } from "@/types/category";
 import { ImageGalleryManager } from "@/components/common/ImageGalleryManager";
@@ -128,6 +128,7 @@ export default function TemplatesAdminPage() {
     mutationFn: (newTemplate: IDigitalProductInput) => templateApi.create(newTemplate, token),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["admin-templates"] });
+      triggerFrontendRevalidation("/");
       setIsModalOpen(false);
       setSuccessMsg(`Template "${res.data?.title}" created successfully!`);
       setTimeout(() => setSuccessMsg(null), 4000);
@@ -143,6 +144,7 @@ export default function TemplatesAdminPage() {
       templateApi.update(id, data, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-templates"] });
+      triggerFrontendRevalidation("/");
       setIsModalOpen(false);
       setSuccessMsg("Template updated successfully!");
       setTimeout(() => setSuccessMsg(null), 4000);
@@ -157,6 +159,7 @@ export default function TemplatesAdminPage() {
     mutationFn: (id: string) => templateApi.delete(id, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-templates"] });
+      triggerFrontendRevalidation("/");
       setSuccessMsg("Template deleted successfully.");
       setTimeout(() => setSuccessMsg(null), 4000);
     },

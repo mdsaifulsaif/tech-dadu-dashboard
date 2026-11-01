@@ -18,7 +18,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { categoryApi } from "@/lib/api";
+import { categoryApi, triggerFrontendRevalidation } from "@/lib/api";
 import { ICategory, ICategoryInput } from "@/types/category";
 
 export default function CategoriesPage() {
@@ -71,6 +71,7 @@ export default function CategoriesPage() {
     mutationFn: (newCategory: ICategoryInput) => categoryApi.create(newCategory, token),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      triggerFrontendRevalidation("/");
       setIsModalOpen(false);
       setSuccessMsg(`Category "${res.data?.name || formData.name}" created successfully!`);
       setTimeout(() => setSuccessMsg(null), 4000);
@@ -86,6 +87,7 @@ export default function CategoriesPage() {
       categoryApi.update(id, data, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      triggerFrontendRevalidation("/");
       setIsModalOpen(false);
       setSuccessMsg(`Category updated successfully!`);
       setTimeout(() => setSuccessMsg(null), 4000);
@@ -100,6 +102,7 @@ export default function CategoriesPage() {
     mutationFn: (id: string) => categoryApi.delete(id, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      triggerFrontendRevalidation("/");
       setSuccessMsg("Category deleted successfully.");
       setTimeout(() => setSuccessMsg(null), 4000);
     },
@@ -184,14 +187,16 @@ export default function CategoriesPage() {
     }
   };
 
-  // Filtered by Search
+  // Filtered by Search & Sorted by Display Order
   const filteredCategories = useMemo(() => {
-    return categories.filter((c: ICategory) => {
-      return (
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.slug.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    });
+    return categories
+      .filter((c: ICategory) => {
+        return (
+          c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.slug.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      })
+      .sort((a: ICategory, b: ICategory) => (a.order ?? 0) - (b.order ?? 0));
   }, [categories, searchQuery]);
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
@@ -411,9 +416,32 @@ export default function CategoriesPage() {
                       </div>
                     </td>
 
-                    {/* Order */}
-                    <td className="py-3.5 px-4 text-center font-bold text-theme-fg">
-                      #{cat.order || 0}
+                    {/* Order (Editable Display Value) */}
+                    <td className="py-3.5 px-4 text-center">
+                      <div className="inline-flex items-center gap-1.5 justify-center">
+                        <span className="text-theme-muted font-bold text-xs">#</span>
+                        <input
+                          type="number"
+                          key={`order-${cat._id}-${cat.order}`}
+                          defaultValue={cat.order ?? 0}
+                          onBlur={(e) => {
+                            const val = Number(e.target.value);
+                            if (val !== (cat.order ?? 0)) {
+                              updateMutation.mutate({
+                                id: cat._id,
+                                data: { order: val },
+                              });
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              (e.target as HTMLInputElement).blur();
+                            }
+                          }}
+                          className="w-14 text-center py-1 px-1.5 rounded-lg border border-theme-border bg-theme-bg font-extrabold text-xs text-theme-fg focus:border-theme-primary focus:ring-1 focus:ring-theme-primary outline-none transition-all shadow-2xs"
+                          title="Display order value (lower number appears first in hero)"
+                        />
+                      </div>
                     </td>
 
                     {/* Actions */}
